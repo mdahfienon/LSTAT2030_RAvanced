@@ -1,0 +1,77 @@
+
+---
+title: "Normality test"
+output: 
+  flexdashboard::flex_dashboard:
+runtime: shiny
+---
+
+
+```{r packages, include=FALSE}
+require(ggplot2)
+require(DT)
+```
+
+## {.sidebar} 
+
+Your `csv` file needs to use a _comma as field separator and period as decimal separator_.
+
+```{r input1}
+
+fileInput(
+  inputId = "csvFile",
+  label = "Please upload a .csv file"
+)
+
+df <- reactive({
+  req(input$csvFile)
+  read.csv(input$csvFile$datapath)
+})
+```
+
+
+```{r input2}
+
+renderUI({
+  selectInput("varchoice",
+    label = "Check the normality of",
+    choices = names(df())[sapply(df(), is.numeric)]
+  )
+})
+
+
+radioButtons("normchoice",
+  label = "Which plot to use to check Normality?",
+  choices = c("Density", "QQ-plot"),
+  selected = "Density"
+)
+```
+
+                      
+## {.tabset}
+
+### Data
+
+```{r data}
+
+renderDT(df())
+```
+
+
+### Plot
+
+```{r Plot output}
+
+
+```
+
+
+### Test
+
+
+
+```{r Test output}
+
+
+
+```

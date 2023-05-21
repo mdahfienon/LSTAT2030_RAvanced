@@ -1,0 +1,135 @@
+---
+title: "Some Distributions"
+output: 
+  flexdashboard::flex_dashboard:
+#    theme: united
+#    theme: yeti
+#    theme: sandstone
+#    theme: simplex
+#    theme: readable
+#    theme: paper
+#    theme: lumen
+#    theme: journal
+#    theme: flatly
+#    theme: darkly
+#    theme: cosmo
+#    theme: cerulean
+    theme: bootstrap
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+require(flexdashboard)
+require(shiny)
+require(ggplot2)
+theme_set(theme_bw())
+require(plotly)
+
+```
+
+# {.sidebar}
+
+```{r}
+br()
+radioButtons(inputId = "dist",
+            label = "Distribution name",
+            c("Normal" = "norm",
+              "Uniform" = "unif",
+              "Log-normal" = "lnorm",
+              "Exponential" = "exp"))
+
+br()
+sliderInput(inputId = "size",
+              label = "Sample size",
+              min = 10,
+              max = 3000,
+              value = 100)
+
+```
+
+
+```{r}
+d <- reactive({
+  dist <- switch(input$dist, 
+               norm = rnorm,
+               unif = runif,
+               lnorm = rlnorm,
+               exp = rexp, rnorm)
+dist(input$size)
+  
+})
+
+
+
+```
+
+
+# Data and Summary
+
+## Numero1{data-width=500}
+
+### summary {data-height=100}
+
+```{r}
+renderPrint({
+summary(d())
+})
+```
+
+
+### jitter
+
+```{r}
+renderPlotly({
+  
+  ggplot(data.frame(data = d()))+
+    geom_jitter(aes(x = data, y = "", width = 0), alpha = 0.2, size = 2)+
+    labs( x = "sample", y = "")
+  
+})
+```
+
+
+##  {data-width=150} 
+
+###  sample
+```{r}
+renderTable(
+  {d()}
+)
+```
+
+
+
+# Plots 
+
+## {.tabset}
+
+### Histogram
+
+```{r}
+plotly::renderPlotly({
+  ggplot(data.frame(data = d()))+
+    geom_histogram( aes(x = data,y = ..density..),col = "white", fill = "skyblue", bins = 12) #+
+   # geom_density(aes(x = data,y = ..density..))
+  
+#col = "red", alpha = 0.3, size = 0.6, xlim = c(min(d()), max(d()))
+  
+  #hist(d())
+})
+```
+
+
+### Boxplot
+
+
+```{r}
+renderPlotly({
+  
+  ggplot(data.frame(data = d()))+
+    geom_boxplot(aes(x = data), varwidth = TRUE, fill = "skyblue")+ #, col = "yellow"
+    labs( x = "sample", y = "")
+})
+```
+

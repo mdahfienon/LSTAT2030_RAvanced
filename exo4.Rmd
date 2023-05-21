@@ -1,0 +1,230 @@
+---
+title: "Dynamic Dashboard"
+#author: "Mathias Dah Fienon"
+output: 
+  flexdashboard::flex_dashboard:
+    theme: united
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(kableExtra)
+library(DT)
+library(ggplot2)
+theme_set(new = theme_bw())
+library(plotly)
+library(shiny)
+```
+
+# Data
+
+## {.sidebar data-width=250}
+
+---
+
+```{r}
+selectInput(inputId = "var_displ",
+                       label = "Species to display",
+                       choices = levels(iris$Species),
+                       selected = levels(iris$Species),
+                       multiple = TRUE)
+```
+
+---
+
+```{r}
+data_display <- reactive({
+  subset(iris, subset = Species %in% input$var_displ, )
+})
+
+ligne <- reactive({
+  as.numeric(rownames(data_display()))
+})
+
+renderUI({
+  rdtr <- range(ligne())
+  sliderInput(inputId = "number_rows",
+            label = "Rows to display",
+            min = rdtr[1] ,
+            max = rdtr[2],
+            value =  rdtr,
+            dragRange = FALSE)
+})
+```
+
+---
+
+## 
+---
+Observations: `r renderText(input$number_rows[1])` - `r renderText(input$number_rows[2])`   
+<br>
+Species: `r renderText(input$var_displ)`
+
+<br>
+
+---
+
+```{r}
+ 
+renderTable({
+  req(input$number_rows)
+  data_display()[ligne() %in% c(input$number_rows[1]:input$number_rows[2]),]},
+  rownames = TRUE)
+```
+
+
+
+
+# Exploration
+
+## {.sidebar data-width=150}
+
+```{r}
+selectInput(inputId = "x",
+            label = "Pick an independent variable (X)",
+            choices = names(iris)[sapply(iris, is.numeric)],
+            selected = names(iris)[sapply(iris, is.numeric)][3])
+```
+
+---
+
+```{r}
+selectInput(inputId = "y",
+            label = "Pick an independent variable (Y)",
+            choices = names(iris)[sapply(iris, is.numeric)],
+            selected = names(iris)[sapply(iris, is.numeric)][4])
+```
+
+
+
+## {.tabset data-width=350}
+
+### Summaries
+
+#### `r renderText({paste("Summary of",input$x, "by Species")})`
+
+```{r}
+renderTable({
+  resx <- aggregate(get(input$x)~Species, iris, FUN = summary)[[2]]
+  rownames(resx) <- levels(iris$Species)
+  resx
+},
+digits = 2,
+hover = TRUE,
+rownames = TRUE)
+```
+
+---
+#### `r renderText({paste("Summary of",input$y, "by Species")})`
+
+```{r}
+renderTable({
+  resx <- aggregate(get(input$y)~Species, iris, FUN = summary)[[2]]
+  rownames(resx) <- levels(iris$Species)
+  resx
+},
+digits = 2,
+hover = TRUE,
+rownames = TRUE)
+```
+
+
+### Linear models
+
+#### `r renderText({paste("lm:",input$y, "~", input$x)})`
+
+
+
+
+_**`setosa`**_
+```{r}
+renderTable({
+  m1 <- lm(get(input$y) ~ get(input$x), data = subset(iris, Species == "setosa"))
+    m1 <- summary(m1)$coef
+    row.names(m1) <- c("(Intercept)", input$x)
+    m1
+},
+digits = 3,
+hover = TRUE,
+rownames = TRUE
+)
+
+```
+
+_**`versicolor`**_
+```{r}
+renderTable({
+  m1 <- lm(get(input$y) ~ get(input$x), data = subset(iris, Species == "versicolor"))
+    m1 <- summary(m1)$coef
+    row.names(m1) <- c("(Intercept)", input$x)
+    m1
+},
+digits = 3,
+hover = TRUE,
+rownames = TRUE
+)
+
+```
+
+
+_**`virginica`**_
+
+```{r}
+renderTable({
+  m1 <- lm(get(input$y) ~ get(input$x), data = subset(iris, Species == "virginica"))
+    m1 <- summary(m1)$coef
+    row.names(m1) <- c("(Intercept)", input$x)
+    m1
+},
+digits = 3,
+hover = TRUE,
+rownames = TRUE
+)
+
+```
+
+
+## {.tabset data-width=500}
+
+### Densities
+
+```{r}
+irisL <- cbind(
+  Species = iris$Species,
+  iris |> stack(select = -Species)
+)
+```
+
+```{r}
+renderPlotly({
+  dt <- subset(irisL, ind %in% c(input$x, input$y))
+  h <- ggplot(dt)+
+    aes(x = values, fill = Species)+
+    geom_density(alpha = 0.5)+
+    labs(x = "", y = "Density")+
+    facet_wrap(facets = vars(ind))
+  
+  ggplotly(h)
+})
+```
+
+
+### Linear models
+
+```{r}
+renderPlotly({
+  f <- ggplot(iris)+
+  aes(x = get(input$x), y = get(input$y), col = Species)+
+  geom_point()+
+    labs(x=input$x, y=input$y)+
+    geom_smooth(method = "lm")
+ggplotly(f)
+})
+```
+
+
+
+
+

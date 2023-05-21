@@ -1,0 +1,48 @@
+
+---
+title: "Upload a file"
+output: html_document 
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r packages, include=FALSE}
+require(DT)
+```
+
+```{r, UIinputs}
+fileInput(
+  inputId = "csvFile",
+  label = "Please upload a .csv file"
+)
+selectInput(inputId = "separator",
+            label = "Colums separator",
+            choices = c("comma" = ",",
+                        "Semi_colon" = ";",
+                        "tab" = " "),
+            selected = "comma")
+
+selectInput(inputId = "decimal",
+            label = "Decimal separator",
+            choices = c("Period" = ".",
+                        "Comma" = ","),
+            selected = "Comma")
+```
+
+
+```{r, Outputs}
+df <- reactive({
+  req(input$csvFile)
+  read.csv(input$csvFile$datapath, sep = input$separator, dec = input$decimal)
+})
+
+renderDT(df())
+```
+
+
+
+
+

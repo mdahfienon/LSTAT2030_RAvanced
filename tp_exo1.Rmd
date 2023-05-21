@@ -1,0 +1,32 @@
+---
+title: "Exponent App"
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+require(latex2exp)
+require(ggplot2)
+theme_set(theme_bw())
+```
+
+```{r}
+inputPanel(
+  
+
+  
+  sliderInput(inputId = "entree",
+              label = "Choose the exponent n ",
+              min = 0,
+              max = 6,
+              value = 0)
+)
+
+renderPlot({
+  ggplot()+ 
+    xlim(-2,2)+
+    stat_function(fun = \(x) x^input$entree)+
+    labs(title = TeX(paste(r"(Curve of y = $x^n$ for n =)", input$entree)))
+  
+})
+```

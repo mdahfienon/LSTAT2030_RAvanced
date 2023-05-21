@@ -1,0 +1,51 @@
+
+---
+title: "A dynamic document"
+output: html_document 
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r packages, include=FALSE}
+library(ggplot2)
+```
+
+
+```{r data}
+data <- data.frame(diamonds)
+dt <- data[sapply(data, is.numeric)]
+```
+
+
+```{r}
+numericInput("nrows",
+  label = "How many rows to display?",
+  value = 5
+)
+
+renderTable({
+  head(data, n = input$nrows)
+})
+```
+
+
+```{r}
+selectInput(
+  inputId = "variable",
+  label = "Choose a variable",
+  choices = names(dt)
+)
+
+renderPlot(
+  ggplot(dt, aes(x = get("carat"))) +
+    geom_histogram()
+)
+
+renderPlot(
+  ggplot(dt, aes(x = log(get("carat")))) +
+    geom_histogram()
+)
+```

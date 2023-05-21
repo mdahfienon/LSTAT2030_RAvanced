@@ -1,0 +1,79 @@
+---
+title: "Exam 2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+require(ggplot2)
+theme_set(theme_bw())
+```
+
+
+
+```{r}
+PlotDens <- function(a = -1, b = 1, mean = 0, sd = 1, df = 1) {
+  require(ggplot2)
+  theme_set(theme_minimal())
+x_value <-  seq(-5,5, length = 200)
+ggplot(data.frame(x_value), aes(x = x_value, linetype = paste0("Normal (mean = ", mean, ",sd = ", sd,")\nP(a < X < b) = ", round(pnorm(a, mean = mean, sd = sd,  lower.tail = FALSE) - pnorm(b,mean = mean, sd = sd, lower.tail = FALSE),3)), color = paste0("Student's t-distribution (df = ", df, ")\nP(a < X < b) = ", round(pt(a, df = df  ,lower.tail = FALSE) - pt(b,df = df  ,lower.tail = FALSE),3))))+
+  stat_function(fun = dnorm, args = list(mean = mean, sd = sd), col = "red", size = 1, alpha = 0.9)+
+  stat_function(geom = "area", fill = "red", alpha = 0.2, fun = dnorm, args = list(mean = mean, sd = sd), xlim = c(a,b), show.legend = FALSE)+
+  stat_function(fun = dt, args = list(df), col = "skyblue", size = 1, alpha = 1)+
+  stat_function(geom = "area", fill = "blue", alpha = 0.5, fun = dt, args = list(df = df), xlim = c(a,b))+
+  geom_segment(x = a, y = 0, xend = a, yend = dnorm(a, mean = mean, sd = sd), linetype = 2, col = 1)+
+  geom_segment(x = b, y = 0, xend =b, yend = dnorm(b, mean = mean, sd = sd), linetype = 2, col = 1)+
+  annotate("text", x=a, y =-0.003, label = "a")+
+  annotate("text", x = b, y = -0.003, label = "b")+
+  labs(x = "", y = "density", linetype = "", color = "  ")+
+theme(legend.position = "top")
+}
+
+PlotDens()
+```
+
+
+```{r}
+PlotDensn <- function(a = -1, b = 1, mean = 0, sd = 1) {
+  require(ggplot2)
+  theme_set(theme_minimal())
+x_value <-  seq(-5,5, length = 200)
+ggplot(data.frame(x_value), aes(x = x_value, linetype = paste0("Normal (mean = ", mean, ",sd = ", sd,")\nP(a < X < b) = ", round(pnorm(a, mean = mean, sd = sd,  lower.tail = FALSE) - pnorm(b,mean = mean, sd = sd, lower.tail = FALSE),3))))+
+  stat_function(fun = dnorm, args = list(mean = mean, sd = sd), col = "red", size = 1, alpha = 0.9)+
+  stat_function(geom = "area", fill = "red", alpha = 0.3, fun = dnorm, args = list(mean = mean, sd = sd), xlim = c(a,b), show.legend = FALSE)+
+  geom_segment(x = a, y = 0, xend = a, yend = dnorm(a, mean = mean, sd = sd), linetype = 2, col = 1)+
+  geom_segment(x = b, y = 0, xend =b, yend = dnorm(b, mean = mean, sd = sd), linetype = 2, col = 1)+
+  annotate("text", x=a, y =-0.003, label = "a")+
+  annotate("text", x = b, y = -0.003, label = "b")+
+  labs(x = "", y = "density", linetype = "", color = "  ")+
+theme(legend.position = "top")
+}
+
+PlotDensn()
+```
+
+
+```{r}
+PlotDenst <- function(a = -1, b = 1, df = 1) {
+  require(ggplot2)
+  theme_set(theme_minimal())
+x_value <-  seq(-5,5, length = 200)
+ggplot(data.frame(x_value), 
+       aes(x = x_value, 
+           linetype = paste0("Student's t-distribution (df = ", 
+                          df,
+                          ")\nP(a < X < b) = ", 
+                          round(pt(a, df = df  ,lower.tail = FALSE) - pt(b,df = df  ,lower.tail = FALSE),3))))+
+  stat_function(fun = dt, args = list(df), col = "red", size = 1, alpha = 0.9)+
+  stat_function(geom = "area", fill = "pink", alpha = 0.3, fun = dt, args = list(df = df), xlim = c(a,b), show.legend = FALSE)+
+  geom_segment(x = a, y = 0, xend = a, yend = dt(a, df = df), linetype = 2, col = 1)+
+  geom_segment(x = b, y = 0, xend =b, yend = dt(b, df = df), linetype = 2, col = 1)+
+  annotate("text", x=a, y =-0.003, label = "a")+
+  annotate("text", x = b, y = -0.003, label = "b")+
+  labs(x = "", y = "density", linetype = "")+
+theme(legend.position = "top")
+}
+PlotDenst()
+```
+

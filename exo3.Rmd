@@ -1,0 +1,112 @@
+---
+title: "A dynamic document"
+output: 
+  flexdashboard: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+require(shiny)
+require(ggplot2)
+theme_set(theme_bw())
+require(plotly)
+```
+
+
+
+```{r data}
+data <- data.frame(diamonds)
+dt <- data[sapply(data, is.numeric)]
+
+tableau <- DT::datatable(data, 
+                         filter = "top", 
+                         options = list(dom = "ltp"))
+
+choi_varia <- selectInput(
+  inputId = "variable",
+  label = "Choose a variable",
+  choices = names(dt)
+)
+
+choi_plo <- 
+  selectInput(
+  inputId = "plot",
+  label = "Select a plot",
+  choices = list("histogram" = 1, "boxplot" = 2),
+  selected = 1
+)
+
+
+nom_bin <- renderUI({
+  if (input$plot == 1) {
+    sliderInput(
+      inputId = "bins",
+      label = "Number of bins:",
+      min = 1,
+      max = 50,
+      value = 15
+    )
+  }
+})
+
+
+hto1 <- renderPlot({
+  q <- ggplot(dt, aes(x = get(input$variable))) 
+  
+  if (input$plot == 1) {
+    q <-  q + geom_histogram(col = "white", fill = "gray", bins = input$bins)+
+    labs(x = input$variable)
+    q
+  } 
+  else if (input$plot == 2) {
+    q <- q + geom_boxplot()+
+      labs(x = input$variable)
+    q
+  } 
+  })
+  
+hto2 <- renderPlot({
+  
+  p <- ggplot(dt, aes(x = log(get(input$variable)))) 
+  
+  if (input$plot == 1){
+    p <- p + geom_histogram(col = "white", fill = "gray", bins = input$bins)+
+    labs(x = paste0("log(",input$variable,")"))
+    p
+  }
+  else if (input$plot == 2) {
+    p <- p + geom_boxplot()+
+      labs(x = input$variable)
+    p
+  }
+  })
+  
+  
+  
+
+```
+
+
+```{r table}
+tableau
+```
+
+
+
+
+```{r}
+sidebarLayout(
+  
+  sidebarPanel(width = 3, 
+               choi_varia,
+               choi_plo,
+               nom_bin),
+  
+  mainPanel(tabsetPanel(
+    tabPanel(title = "Original scale",hto1),
+    tabPanel(title = "Log scale", hto2)
+  ), width = 9)
+)
+
+```
